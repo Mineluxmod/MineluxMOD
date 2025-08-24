@@ -14,17 +14,20 @@
 
 <div class="sidebar">
   <div class="profile">
-    <img id="avatar" alt="" style="display:none"/>
-    <div id="uname" style="margin-top:8px"></div>
-    <div class="grid" style="margin-top:10px">
-      <button class="btn secondary" onclick="toLogin()">تسجيل / خروج</button>
+    <img id="avatar" alt="" style="display:none; width: 80px; height: 80px;"/>
+    <div id="uname" style="margin-top:8px; font-size: 14px;"></div>
+    
+    <div class="grid" style="margin-top:15px; gap: 10px;">
       <button id="adminBtn" class="btn" style="display:none" onclick="location.href='admin.html'">قائمة الأدمن</button>
+      <button class="btn secondary" onclick="toLogin()" id="loginBtn">تسجيل الدخول</button>
+      <button class="btn danger" onclick="logout()" id="logoutBtn" style="display:none">تسجيل الخروج</button>
+      <button class="btn" onclick="changeAvatar()" id="changeAvatarBtn" style="display:none">تغيير الصورة</button>
     </div>
   </div>
   
   <div class="panel" style="margin-top: 20px;">
     <div style="font-size: 10px; color: #28a745; text-align: center;">
-      ✓ التوكن جاهز تلقائياً
+      ✓ النظام جاهز تلقائياً
     </div>
   </div>
 </div>
@@ -40,8 +43,10 @@
       <input class="input" id="q" placeholder="ابحث عن مود..." />
     </div>
   </div>
-  <div id="mods" class="grid" style="grid-template-columns:repeat(auto-fit,minmax(260px,1fr))"></div>
+  <div id="mods" class="grid" style="grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap: 20px;"></div>
 </div>
+
+<input type="file" id="avatarInput" accept="image/*" style="display:none" />
 
 <div class="toast"></div>
 <script type="module" src="index_logic.js"></script>
