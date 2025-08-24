@@ -1,33 +1,33 @@
 import { GITHUB, fetchJSON, commitJSON, toast } from './utils.js';
-import { loadUsers, deleteUser, getUsers } from './users.js';
+import { initializeUsers, getUsers } from './users.js';
 
 let mods = [];
 let users = {};
 
 async function init() {
   try {
-    await loadData();
+    // تحميل المستخدمين من GitHub
+    users = await initializeUsers();
+    await loadMods();
     setupEventListeners();
+    
+    console.log('لوحة الأدمن جاهزة');
+    console.log('عدد المستخدمين:', Object.keys(users).length);
+    console.log('عدد المودات:', mods.length);
   } catch (error) {
-    console.error('Admin init error:', error);
+    console.error('خطأ في تحميل لوحة الأدمن:', error);
     toast('فشل تحميل لوحة التحكم', 'error');
   }
 }
 
-async function loadData() {
+async function loadMods() {
   try {
-    // تحميل المودات
     const modsData = await fetchJSON(GITHUB.modsPath);
     mods = Array.isArray(modsData) ? modsData : [];
-    
-    // تحميل المستخدمين
-    await loadUsers();
-    users = getUsers();
-    
     renderMods();
     renderUsers();
   } catch (err) {
-    console.error('Load data error:', err);
+    console.error('فشل تحميل المودات:', err);
     toast('فشل تحميل البيانات', 'error');
     mods = [];
     users = {};
@@ -105,7 +105,6 @@ async function addMod() {
     return;
   }
 
-  // التحقق من صحة الرابط
   if (!link.startsWith('http://') && !link.startsWith('https://')) {
     toast('الرابط يجب أن يبدأ بـ http:// أو https://', 'error');
     return;
@@ -118,22 +117,18 @@ async function addMod() {
       type, 
       link, 
       desc: desc || '',
-      image: '' // يمكن إضافة رفع الصور لاحقاً
+      image: ''
     };
 
-    // إضافة المود جديد إلى المصفوفة
     const updatedMods = [...mods, newMod];
-    
-    // حفظ على GitHub
     await commitJSON(GITHUB.modsPath, updatedMods, `تم إضافة مود: ${name}`);
     
-    // تحديث البيانات المحلية
     mods = updatedMods;
     renderMods();
     clearModForm();
     toast('تم إضافة المود بنجاح ✓', 'success');
   } catch (error) {
-    console.error('Add mod error:', error);
+    console.error('خطأ في إضافة المود:', error);
     toast('فشل إضافة المود: ' + error.message, 'error');
   }
 }
@@ -160,7 +155,7 @@ async function addUser() {
     clearUserForm();
     toast('تم إضافة المستخدم بنجاح ✓', 'success');
   } catch (error) {
-    console.error('Add user error:', error);
+    console.error('خطأ في إضافة المستخدم:', error);
     toast('فشل إضافة المستخدم: ' + error.message, 'error');
   }
 }
@@ -178,7 +173,7 @@ async function deleteMod(index) {
     renderMods();
     toast('تم حذف المود بنجاح ✓', 'success');
   } catch (error) {
-    console.error('Delete mod error:', error);
+    console.error('خطأ في حذف المود:', error);
     toast('فشل حذف المود: ' + error.message, 'error');
   }
 }
@@ -198,7 +193,7 @@ async function deleteUser(username) {
     renderUsers();
     toast('تم حذف المستخدم بنجاح ✓', 'success');
   } catch (error) {
-    console.error('Delete user error:', error);
+    console.error('خطأ في حذف المستخدم:', error);
     toast('فشل حذف المستخدم: ' + error.message, 'error');
   }
 }
@@ -217,7 +212,6 @@ function clearUserForm() {
 }
 
 function setupEventListeners() {
-  // إضافة event listeners للحقول
   const inputs = document.querySelectorAll('.input');
   inputs.forEach(input => {
     input.addEventListener('keypress', (e) => {
@@ -229,7 +223,7 @@ function setupEventListeners() {
   });
 }
 
-// جعل الدوال متاحة globally
+// الدوال العامة
 window.addMod = addMod;
 window.addUser = addUser;
 window.deleteMod = deleteMod;
