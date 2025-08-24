@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Minelux – الأدمن</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<div class="topbar">
+  <div class="logo"><span class="cube"></span> Minelux • Admin</div>
+  <button class="btn secondary" onclick="location.href='index.html'">← الرئيسية</button>
+</div>
+
+<div class="container grid" style="grid-template-columns:1fr 1fr">
+  <div class="panel">
+    <h3 style="margin-top:0">المودات</h3>
+    <div class="form">
+      <div class="row">
+        <div><label class="label">الاسم</label><input class="input" id="m_name"/></div>
+        <div><label class="label">الإصدار</label><input class="input" id="m_ver"/></div>
+      </div>
+      <div class="row">
+        <div><label class="label">النوع</label><input class="input" id="m_type"/></div>
+        <div><label class="label">رابط التحميل</label><input class="input" id="m_link" placeholder="https://..."/></div>
+      </div>
+      <label class="label">الوصف</label>
+      <textarea class="input" id="m_desc" rows="3"></textarea>
+      <div class="row">
+        <div><label class="label">صورة (16:9)</label><input class="input" type="file" id="m_img" accept="image/*"/></div>
+        <div class="center"><button class="btn" onclick="addMod()">إضافة المود</button></div>
+      </div>
+    </div>
+    <div id="modsList" class="grid" style="margin-top:12px; grid-template-columns:1fr;"></div>
+  </div>
+
+  <div class="panel">
+    <h3 style="margin-top:0">المستخدمون</h3>
+    <div class="form">
+      <div class="row">
+        <div><label class="label">اسم المستخدم</label><input class="input" id="u_name"/></div>
+        <div><label class="label">كلمة المرور</label><input class="input" id="u_pass" type="password"/></div>
+      </div>
+      <label class="label">صورة الحساب</label>
+      <input class="input" type="file" id="u_img" accept="image/*"/>
+      <div class="center"><button class="btn" onclick="addUser()">إضافة المستخدم</button></div>
+    </div>
+    <div id="usersList" class="grid" style="margin-top:12px; grid-template-columns:1fr;"></div>
+  </div>
+</div>
+
+<div class="toast"></div>
+<script type="module" src="admin_logic.js"></script>
+</body>
+</html>

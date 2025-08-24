@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Minelux – المودات</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<div class="topbar">
+  <div class="logo"><span class="cube"></span> Minelux</div>
+  <div class="hamburger" onclick="document.querySelector('.sidebar').classList.toggle('active')">☰</div>
+</div>
+
+<div class="sidebar">
+  <div class="profile">
+    <img id="avatar" alt="" style="display:none"/>
+    <div id="uname" style="margin-top:8px"></div>
+    <div class="grid" style="margin-top:10px">
+      <button class="btn secondary" onclick="toLogin()">تسجيل / خروج</button>
+      <button id="adminBtn" class="btn" style="display:none" onclick="location.href='admin.html'">قائمة الأدمن</button>
+    </div>
+  </div>
+  
+  <div class="panel" style="margin-top: 20px;">
+    <div style="font-size: 10px; color: #28a745; text-align: center;">
+      ✓ التوكن جاهز تلقائياً
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="panel" style="margin-bottom:14px">
+    <div class="grid row">
+      <div><label class="label">الإصدار</label><select class="input" id="vSel"><option value="">الكل</option></select></div>
+      <div><label class="label">النوع</label><select class="input" id="tSel"><option value="">الكل</option></select></div>
+    </div>
+    <div style="margin-top:10px">
+      <label class="label">بحث</label>
+      <input class="input" id="q" placeholder="ابحث عن مود..." />
+    </div>
+  </div>
+  <div id="mods" class="grid" style="grid-template-columns:repeat(auto-fit,minmax(260px,1fr))"></div>
+</div>
+
+<div class="toast"></div>
+<script type="module" src="index_logic.js"></script>
+</body>
+</html>

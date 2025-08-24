@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Minelux – تسجيل الدخول</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<div class="topbar">
+  <div class="logo"><span class="cube"></span> Minelux</div>
+  <button class="btn secondary" onclick="location.href='index.html'">← الرئيسية</button>
+</div>
+
+<div class="container center">
+  <div class="panel auth-card">
+    <h2 class="logo center" style="margin:8px 0 14px"><span class="cube"></span> Minelux</h2>
+    <div style="font-size: 10px; color: #28a745; text-align: center; margin-bottom: 15px;">
+      ✓ النظام جاهز تلقائياً
+    </div>
+    <div id="forms" class="grid">
+      <div id="loginForm" class="grid">
+        <label class="label">اسم المستخدم</label>
+        <input class="input" id="loginUser" placeholder="username" />
+        <label class="label">كلمة المرور</label>
+        <input class="input" id="loginPass" type="password" placeholder="••••••" />
+        <button class="btn" onclick="login()">تسجيل الدخول</button>
+        <button class="btn secondary" onclick="toggleForms()">إنشاء حساب جديد</button>
+      </div>
+      <div id="registerForm" class="grid" style="display:none">
+        <div class="avatar-upload" id="avatarZone">+ صورة</div>
+        <input type="file" id="regImg" accept="image/*" style="display:none" />
+        <label class="label">اسم المستخدم</label>
+        <input class="input" id="regUser" placeholder="username" />
+        <label class="label">كلمة المرور</label>
+        <input class="input" id="regPass" type="password" placeholder="••••••" />
+        <button class="btn" onclick="register()">إنشاء الحساب</button>
+        <button class="btn secondary" onclick="toggleForms()">عودة لتسجيل الدخول</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast"></div>
+<script type="module" src="login_logic.js"></script>
+</body>
+</html>
