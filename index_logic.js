@@ -1,5 +1,5 @@
 import { GITHUB, fetchJSON, toast } from './utils.js';
-import { getCurrentUser, loadUsers, logout, updateUserImage } from './users.js';
+import { getCurrentUser, initializeUsers, logout, updateUserImage } from './users.js';
 
 let allMods = [];
 let currentUser = null;
@@ -7,24 +7,30 @@ let users = {};
 
 async function init() {
   try {
-    users = await loadUsers();
+    // تحميل المستخدمين من GitHub أولاً
+    users = await initializeUsers();
     currentUser = getCurrentUser();
     updateUI();
     await loadMods();
     setupEventListeners();
+    
+    console.log('التهيئة اكتملت بنجاح');
+    console.log('المستخدمين المحملين:', Object.keys(users));
+    console.log('المستخدم الحالي:', currentUser);
   } catch (error) {
-    console.error('Initialization error:', error);
-    toast('فشل تهيئة التطبيق', 'error');
+    console.error('خطأ في التهيئة:', error);
+    toast('فشل تحميل التطبيق', 'error');
   }
 }
 
 async function loadMods() {
   try {
-    allMods = await fetchJSON(GITHUB.modsPath);
+    const modsData = await fetchJSON(GITHUB.modsPath);
+    allMods = Array.isArray(modsData) ? modsData : [];
     renderMods(allMods);
     populateFilters();
   } catch (err) {
-    console.error('Failed to load mods:', err);
+    console.error('فشل تحميل المودات:', err);
     toast('فشل تحميل المودات', 'error');
     allMods = [];
     renderMods(allMods);
@@ -54,7 +60,7 @@ function renderMods(mods) {
            alt="${mod.name}" 
            onerror="this.src='https://placehold.co/400x225/ff4444/ffffff?text=Error+Loading'"/>
       <div class="content">
-        <h3>${mod.name}</h3>
+        <h3>${mod.name || 'بدون اسم'}</h3>
         <p>${mod.desc || 'لا يوجد وصف'}</p>
         <div class="grid" style="grid-template-columns:1fr 1fr; margin-top:12px; gap: 8px;">
           <span class="mod-tag">${mod.version || 'N/A'}</span>
@@ -99,7 +105,6 @@ function setupEventListeners() {
   if (versionSelect) versionSelect.addEventListener('change', filterMods);
   if (typeSelect) typeSelect.addEventListener('change', filterMods);
   
-  // استمع لتغيير الصورة
   const avatarInput = document.getElementById('avatarInput');
   if (avatarInput) {
     avatarInput.addEventListener('change', handleAvatarUpload);
@@ -133,21 +138,25 @@ function updateUI() {
   const changeAvatarBtn = document.getElementById('changeAvatarBtn');
 
   if (currentUser) {
+    const userData = users[currentUser];
+    
     if (avatar) {
       avatar.style.display = 'block';
-      const userImage = users[currentUser]?.image;
-      avatar.src = userImage || 'https://placehold.co/80x80/2c2c2c/ffffff?text=User';
+      avatar.src = userData?.image || 'https://placehold.co/80x80/2c2c2c/ffffff?text=User';
       avatar.onerror = () => { 
         avatar.src = 'https://placehold.co/80x80/ff4444/ffffff?text=Error';
       };
     }
+    
     if (username) {
       username.textContent = currentUser;
       username.style.display = 'block';
     }
+    
     if (adminBtn && currentUser === 'Minelux') {
       adminBtn.style.display = 'block';
     }
+    
     if (loginBtn) loginBtn.style.display = 'none';
     if (logoutBtn) logoutBtn.style.display = 'block';
     if (changeAvatarBtn) changeAvatarBtn.style.display = 'block';
@@ -158,21 +167,6 @@ function updateUI() {
     if (loginBtn) loginBtn.style.display = 'block';
     if (logoutBtn) logoutBtn.style.display = 'none';
     if (changeAvatarBtn) changeAvatarBtn.style.display = 'none';
-  }
-}
-
-function toLogin() {
-  if (currentUser) {
-    logout();
-  } else {
-    location.href = 'login.html';
-  }
-}
-
-function changeAvatar() {
-  const avatarInput = document.getElementById('avatarInput');
-  if (avatarInput) {
-    avatarInput.click();
   }
 }
 
@@ -191,13 +185,11 @@ async function handleAvatarUpload(event) {
   }
 
   try {
-    // تحويل الصورة إلى base64
     const reader = new FileReader();
     reader.onload = async function(e) {
       const imageDataUrl = e.target.result;
       const success = await updateUserImage(currentUser, imageDataUrl);
       if (success) {
-        // تحديث الصورة فوراً
         const avatar = document.getElementById('avatar');
         if (avatar) {
           avatar.src = imageDataUrl;
@@ -206,18 +198,29 @@ async function handleAvatarUpload(event) {
     };
     reader.readAsDataURL(file);
   } catch (error) {
-    console.error('Avatar upload error:', error);
+    console.error('خطأ في رفع الصورة:', error);
     toast('فشل تحميل الصورة', 'error');
   }
   
-  // مسح قيمة input للسماح باختيار نفس الملف مرة أخرى
   event.target.value = '';
 }
 
-// جعل الدوال متاحة globally
-window.toLogin = toLogin;
+// الدوال العامة
+window.toLogin = function() {
+  if (currentUser) {
+    logout();
+  } else {
+    location.href = 'login.html';
+  }
+};
+
 window.logout = logout;
-window.changeAvatar = changeAvatar;
+window.changeAvatar = function() {
+  const avatarInput = document.getElementById('avatarInput');
+  if (avatarInput) {
+    avatarInput.click();
+  }
+};
 
 // التهيئة
 document.addEventListener('DOMContentLoaded', init);
