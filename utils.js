@@ -16,12 +16,10 @@ export function getToken() {
 }
 
 export function setToken(t) {
-  // لا شيء - التوكن ثابت
   console.log('التوكن ثابت ولا يمكن تغييره');
 }
 
 export function clearToken() {
-  // لا شيء - التوكن ثابت
   console.log('التوكن ثابت ولا يمكن مسحه');
 }
 
@@ -35,7 +33,9 @@ export function getTokenStatus() {
 
 export async function fetchJSON(path) {
   try {
-    const res = await fetch(path + '?_=' + Date.now());
+    // استخدام raw.githubusercontent.com للقراءة
+    const rawUrl = `https://raw.githubusercontent.com/${GITHUB.owner}/${GITHUB.repo}/${GITHUB.branch}/${path}`;
+    const res = await fetch(rawUrl + '?_=' + Date.now());
     if (!res.ok) throw new Error('فشل تحميل ' + path);
     return await res.json();
   } catch (error) {
@@ -56,7 +56,10 @@ async function getFileSHA(path) {
     });
     
     if (res.status === 404) return null;
-    if (!res.ok) throw new Error('فشل الحصول على SHA للملف');
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({}));
+      throw new Error(errorData.message || 'فشل الحصول على SHA للملف');
+    }
     
     const data = await res.json();
     return data.sha;
@@ -73,7 +76,7 @@ export async function commitJSON(path, obj, message) {
     const sha = await getFileSHA(path);
     
     const body = {
-      message,
+      message: message || `Update ${path}`,
       content,
       branch: GITHUB.branch
     };
@@ -84,14 +87,16 @@ export async function commitJSON(path, obj, message) {
       method: 'PUT',
       headers: {
         'Accept': 'application/vnd.github+json',
-        'Authorization': `Bearer ${PERMANENT_TOKEN}`
+        'Authorization': `Bearer ${PERMANENT_TOKEN}`,
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify(body)
     });
     
     if (!res.ok) {
       const errorData = await res.json().catch(() => ({}));
-      throw new Error(errorData.message || 'فشل الحفظ');
+      console.error('GitHub API Error:', errorData);
+      throw new Error(errorData.message || `فشل الحفظ: ${res.status}`);
     }
     
     return await res.json();
@@ -115,5 +120,5 @@ export function toast(msg, type = 'info') {
   setTimeout(() => {
     t.classList.remove('show');
     setTimeout(() => t.className = 'toast', 300);
-  }, 2500);
+  }, 3000);
 }
