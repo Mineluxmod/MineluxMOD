@@ -4,19 +4,14 @@ let users = {};
 
 export async function loadUsers() {
   try {
-    users = await fetchJSON(GITHUB.usersPath);
+    console.log('جاري تحميل المستخدمين من GitHub...');
+    const usersData = await fetchJSON(GITHUB.usersPath);
+    users = usersData;
+    console.log('تم تحميل المستخدمين بنجاح:', Object.keys(users).length);
     return users;
   } catch (err) {
-    console.warn('فشل تحميل المستخدمين، استخدام البيانات المحلية');
-    try {
-      const localUsers = localStorage.getItem('local_users');
-      if (localUsers) {
-        users = JSON.parse(localUsers);
-        return users;
-      }
-    } catch (e) {
-      console.error('Error parsing local users:', e);
-    }
+    console.error('فشل تحميل المستخدمين من GitHub:', err);
+    toast('فشل تحميل قائمة المستخدمين', 'error');
     users = {};
     return users;
   }
@@ -36,17 +31,19 @@ export function logout() {
 }
 
 export async function register(username, password, image = '') {
-  if (!username || !password) throw new Error('اكمل البيانات');
+  if (!username || !password) throw new Error('اكمل جميع الحقول');
   if (users[username]) throw new Error('المستخدم موجود مسبقًا');
   
+  // إضافة المستخدم الجديد
   users[username] = { password, image };
   
   try {
-    await commitJSON(GITHUB.usersPath, users, `Add user ${username}`);
+    // الحفظ على GitHub
+    await commitJSON(GITHUB.usersPath, users, `إضافة مستخدم جديد: ${username}`);
     toast('تم إنشاء الحساب بنجاح ✓', 'success');
   } catch (err) {
-    localStorage.setItem('local_users', JSON.stringify(users));
-    toast('تم حفظ المستخدم محلياً ✓', 'warning');
+    console.error('فشل حفظ المستخدم على GitHub:', err);
+    throw new Error('فشل إنشاء الحساب: تحقق من الاتصال بالإنترنت');
   }
   
   localStorage.setItem('currentUser', username);
@@ -54,15 +51,36 @@ export async function register(username, password, image = '') {
 
 export async function deleteUser(username) {
   if (!users[username]) throw new Error('المستخدم غير موجود');
+  if (username === 'Minelux') throw new Error('لا يمكن حذف الأدمن الرئيسي');
   
+  // حذف المستخدم
   delete users[username];
   
   try {
-    await commitJSON(GITHUB.usersPath, users, `Delete user ${username}`);
+    // الحفظ على GitHub
+    await commitJSON(GITHUB.usersPath, users, `حذف المستخدم: ${username}`);
     toast('تم حذف المستخدم بنجاح ✓', 'success');
   } catch (err) {
-    localStorage.setItem('local_users', JSON.stringify(users));
-    throw new Error('تم الحذف محلياً فقط');
+    console.error('فشل حذف المستخدم من GitHub:', err);
+    throw new Error('فشل حذف المستخدم');
+  }
+}
+
+export async function updateUserImage(username, imageUrl) {
+  if (!users[username]) throw new Error('المستخدم غير موجود');
+  
+  // تحديث الصورة
+  users[username].image = imageUrl;
+  
+  try {
+    // الحفظ على GitHub
+    await commitJSON(GITHUB.usersPath, users, `تحديث صورة المستخدم: ${username}`);
+    toast('تم تحديث الصورة بنجاح ✓', 'success');
+    return true;
+  } catch (err) {
+    console.error('فشل تحديث الصورة على GitHub:', err);
+    toast('فشل حفظ الصورة على السيرفر', 'error');
+    return false;
   }
 }
 
@@ -74,18 +92,13 @@ export function getUsers() {
   return users;
 }
 
-export async function updateUserImage(username, imageUrl) {
-  if (!users[username]) throw new Error('المستخدم غير موجود');
-  
-  users[username].image = imageUrl;
-  
+// تهيئة المستخدمين عند التحميل
+export async function initializeUsers() {
   try {
-    await commitJSON(GITHUB.usersPath, users, `Update user image: ${username}`);
-    toast('تم تحديث الصورة بنجاح ✓', 'success');
-    return true;
-  } catch (err) {
-    localStorage.setItem('local_users', JSON.stringify(users));
-    toast('تم حفظ الصورة محلياً ✓', 'warning');
-    return false;
+    await loadUsers();
+    return users;
+  } catch (error) {
+    console.error('فشل تهيئة المستخدمين:', error);
+    return {};
   }
 }
