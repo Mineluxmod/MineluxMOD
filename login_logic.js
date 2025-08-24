@@ -1,11 +1,12 @@
-import { register, login, getCurrentUser, loadUsers } from './users.js';
+import { register, login, getCurrentUser, initializeUsers } from './users.js';
 import { toast } from './utils.js';
 
 let currentForm = 'login';
 
 async function init() {
   try {
-    await loadUsers();
+    // تحميل المستخدمين من GitHub أولاً
+    await initializeUsers();
     
     if (getCurrentUser()) {
       window.location.href = 'index.html';
@@ -14,7 +15,8 @@ async function init() {
     
     setupEventListeners();
   } catch (error) {
-    console.error('Login init error:', error);
+    console.error('خطأ في تحميل صفحة التسجيل:', error);
+    toast('فشل تحميل بيانات المستخدمين', 'error');
   }
 }
 
@@ -34,8 +36,8 @@ function toggleForms() {
 }
 
 async function handleLogin() {
-  const username = document.getElementById('loginUser')?.value;
-  const password = document.getElementById('loginPass')?.value;
+  const username = document.getElementById('loginUser')?.value.trim();
+  const password = document.getElementById('loginPass')?.value.trim();
   
   if (!username || !password) {
     toast('املأ جميع الحقول', 'error');
@@ -44,20 +46,20 @@ async function handleLogin() {
   
   try {
     if (login(username, password)) {
-      toast('تم تسجيل الدخول بنجاح ✓');
+      toast('تم تسجيل الدخول بنجاح ✓', 'success');
       setTimeout(() => window.location.href = 'index.html', 1000);
     } else {
       toast('اسم المستخدم أو كلمة المرور غير صحيحة', 'error');
     }
   } catch (error) {
-    console.error('Login error:', error);
+    console.error('خطأ في تسجيل الدخول:', error);
     toast('فشل تسجيل الدخول', 'error');
   }
 }
 
 async function handleRegister() {
-  const username = document.getElementById('regUser')?.value;
-  const password = document.getElementById('regPass')?.value;
+  const username = document.getElementById('regUser')?.value.trim();
+  const password = document.getElementById('regPass')?.value.trim();
   
   if (!username || !password) {
     toast('املأ جميع الحقول المطلوبة', 'error');
@@ -66,18 +68,27 @@ async function handleRegister() {
   
   try {
     await register(username, password, '');
-    toast('تم إنشاء الحساب بنجاح ✓');
+    toast('تم إنشاء الحساب بنجاح ✓', 'success');
     setTimeout(() => window.location.href = 'index.html', 1000);
   } catch (error) {
-    console.error('Register error:', error);
+    console.error('خطأ في التسجيل:', error);
     toast(error.message || 'فشل إنشاء الحساب', 'error');
   }
 }
 
-function setupEventListeners() {}
+function setupEventListeners() {
+  const avatarZone = document.getElementById('avatarZone');
+  const regImg = document.getElementById('regImg');
+  
+  if (avatarZone && regImg) {
+    avatarZone.addEventListener('click', () => regImg.click());
+  }
+}
 
+// الدوال العامة
 window.toggleForms = toggleForms;
 window.login = handleLogin;
 window.register = handleRegister;
 
+// التهيئة
 document.addEventListener('DOMContentLoaded', init);
